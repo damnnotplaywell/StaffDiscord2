@@ -1,4 +1,4 @@
-# import requests module
+# Import requests module
 import requests
 from datetime import datetime
 
@@ -14,19 +14,18 @@ def data_parse():
   
   return data
 
-
 def print_caster(casters):
   found = False
-  msg = "今日も1日 Have a good day.\n"
+  msg = "今日も1日 Have a good day.\n\n"
   # img_url = []
   # hour = []
 
   # IMPORTANT: use the data as the first iteration to check whether the caster is in the data or not in order to get the correct order of the time
+  
   # Iterate every item in json
   for item in data_parse():
     # Iterate every caster in casters
     for caster in casters:
-      # Initialize to indicate whether the caster is present in the data
       # Iterate every values in json
       for value in item.values():
         # Check whether the caster is in the values
@@ -40,7 +39,7 @@ def print_caster(casters):
           
           # Append image URL and time
           """img_url.append(f"https://smtgvs.cdn.weathernews.jp/wnl/img/caster/M1_{program(title[1])}_{caster}.jpg?1")
-          hour.append(str(time))"""
+hour.append(str(time))"""
 
           msg = msg + f"本日の{kanji(caster)}の出演予定：{title[1]} {str(time)[:-3]}〜 (Indonesia time)\n\n"
 
@@ -94,4 +93,3 @@ def program(title):
     program_title = "moon"
 
   return program_title
-  
