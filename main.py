@@ -20,11 +20,10 @@ staff_channel_id = 1049414474274189333
 botdump_channel_id = 1040908494297120808
 
 # Set up time
-time = time(16, 32)
+time1 = time(20, 0)
 
 # Casters
-casters = ["hiyama","kobayashi", "komaki"]
-data = Data(casters)
+casters = ["hiyama2018", "kobayashi", "komaki2018"]
 
 def run_client():
   try:
@@ -40,49 +39,53 @@ def index():
 
 ####################################################
 ################# MESSAGE CONTENT ##################
-def send_message():
+async def send_message():
   # Parsing process
-  msg = data.print_caster()
-
-  return msg
+  msg = message(casters)
+  
   # # Send message to Discord
-  # channel = client.get_channel(staff_channel_id)
-  # await channel.send('@everyone\n' + msg)
+  channel = client.get_channel(staff_channel_id)
+  await channel.send('@everyone\n' + msg)
 
-def carousel_content():
+async def carousel_content():
   # Create the carousel message
-  cur_caster, cur_hour, cur_title, cur_img = data.current()
+  cur_caster, cur_hour, cur_title, cur_img = current()
   
   embed = discord.Embed(title="ウェザーニュース L!VE", description="番組表（タイムテーブル）", url="https://www.youtube.com/watch?v=zAdWzjab1B8")
   embed.set_thumbnail(url=cur_img)
-  embed.add_field(name="Caster", value=caster_kanji(cur_caster))
+  embed.add_field(name="Caster", value=caster_kanji(caster_trans(cur_caster)))
   embed.add_field(name="Time", value=cur_hour)
   embed.add_field(name="Program", value=cur_title)
 
-  return embed
+  channel = client.get_channel(staff_channel_id)
+  await channel.send(embed = embed)
   
 ####################################################
 ##################### TASKS ########################
-
 @client.event
 async def on_ready():
-  @loop(time=time)
-  async def task():
+  @loop(time=time1)
+  async def task_1():
     await send_message()
-  # Start the scheduled_task loop
-  task.start()
 
-@client.event
-async def on_message(message):
-  if message.content.startswith("!send"):
-    channel = client.get_channel(botdump_channel_id)
-    await channel.send(embed=carousel_content())
-  elif message.content.startswith("!try"):
-    channel = client.get_channel(botdump_channel_id)
-    await channel.send(send_message())
+  # Update time2
+  caster, hour, title = data(casters)
+  time2 = [time.fromisoformat(t) for t in hour]
+
+  tasks = []
+  for t in time2:
+    @loop(time=t)
+    async def task_2():
+      await carousel_content()
+    tasks.append(task_2)
+  
+  # Start the scheduled_task loop
+  task_1.start()
+  for task in tasks:
+    task.start()
 
 client_thread = Thread(target=run_client)
 client_thread.start()
 
-#if __name__ == '__main__':
-  # app.run(host='0.0.0.0', port=8080)
+if __name__ == '__main__':
+  app.run(host='0.0.0.0', port=8080)
