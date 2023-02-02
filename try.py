@@ -54,7 +54,7 @@ def caster_trans(caster):
   elif caster == "yuki":
     alt_caster = "uchida"
           
-  return alt_caster;
+  return alt_caster
 
 # If statement for program title
 def title_trans(title):
@@ -96,6 +96,7 @@ def data(casters):
     
     return caster, hour, title
 
+# Function to print the message
 def message(casters):
     caster, hour, title = data(casters)
     
