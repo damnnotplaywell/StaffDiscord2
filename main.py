@@ -20,7 +20,11 @@ staff_channel_id = 1049414474274189333
 botdump_channel_id = 1040908494297120808
 
 # Set up time
-time = time(20, 0)
+time = time(16, 32)
+
+# Casters
+casters = ["hiyama","kobayashi", "komaki"]
+data = Data(casters)
 
 def run_client():
   try:
@@ -36,22 +40,24 @@ def index():
 
 ####################################################
 ################# MESSAGE CONTENT ##################
-async def send_message():
+def send_message():
   # Parsing process
-  casters = ["hiyama", "kobayashi", "komaki"]
-  msg = print_caster(casters)
-  
-  # Send message to Discord
-  channel = client.get_channel(staff_channel_id)
-  await channel.send('@everyone\n' + msg)
+  msg = data.print_caster()
+
+  return msg
+  # # Send message to Discord
+  # channel = client.get_channel(staff_channel_id)
+  # await channel.send('@everyone\n' + msg)
 
 def carousel_content():
   # Create the carousel message
+  cur_caster, cur_hour, cur_title, cur_img = data.current()
+  
   embed = discord.Embed(title="ウェザーニュース L!VE", description="番組表（タイムテーブル）", url="https://www.youtube.com/watch?v=zAdWzjab1B8")
-  embed.set_thumbnail(url="https://smtgvs.cdn.weathernews.jp/wnl/img/caster/M1_moon_hiyama.jpg?1")
-  embed.add_field(name="Caster", value="This is option 1.")
-  embed.add_field(name="Time", value="This is option 2.")
-  embed.add_field(name="Program", value="This is option 3.")
+  embed.set_thumbnail(url=cur_img)
+  embed.add_field(name="Caster", value=caster_kanji(cur_caster))
+  embed.add_field(name="Time", value=cur_hour)
+  embed.add_field(name="Program", value=cur_title)
 
   return embed
   
@@ -71,9 +77,12 @@ async def on_message(message):
   if message.content.startswith("!send"):
     channel = client.get_channel(botdump_channel_id)
     await channel.send(embed=carousel_content())
+  elif message.content.startswith("!try"):
+    channel = client.get_channel(botdump_channel_id)
+    await channel.send(send_message())
 
 client_thread = Thread(target=run_client)
 client_thread.start()
 
-if __name__ == '__main__':
-  app.run(host='0.0.0.0', port=8080)
+#if __name__ == '__main__':
+  # app.run(host='0.0.0.0', port=8080)

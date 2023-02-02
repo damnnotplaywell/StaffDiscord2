@@ -1,61 +1,16 @@
-# Import requests module
 import requests
 from datetime import datetime
 
+# Function to parse the json data from URL
 def data_parse():
-  # URL
-  url = "http://smtgvs.cdn.weathernews.jp/a/solive_timetable/timetable.json"  
-
-  # Making a get request
-  response = requests.get(url)
-  
-  # Parse the json
-  data = response.json()
-  
-  return data
-
-def print_caster(casters):
-  found = False
-  msg = "今日も1日 Have a good day.\n\n"
-  # img_url = []
-  # hour = []
-
-  # IMPORTANT: use the data as the first iteration to check whether the caster is in the data or not in order to get the correct order of the time
-  
-  # Iterate every item in json
-  for item in data_parse():
-    # Iterate every caster in casters
-    for caster in casters:
-      # Iterate every values in json
-      for value in item.values():
-        # Check whether the caster is in the values
-        if caster in value:
-          # Set found to True
-          found = True
-          # Split the title to get the program title
-          title = item['title'].split("・")
-          # Timezone different
-          time = datetime.strptime(item['hour'], '%H:%M') - datetime.strptime("2:00", '%H:%M')
-          
-          # Append image URL and time
-          """img_url.append(f"https://smtgvs.cdn.weathernews.jp/wnl/img/caster/M1_{program(title[1])}_{caster}.jpg?1")
-hour.append(str(time))"""
-
-          msg = msg + f"本日の{kanji(caster)}の出演予定：{title[1]} {str(time)[:-3]}〜 (Indonesia time)\n\n"
-
-          break
-          
-      if found:
-        break
-  
-  # Check if there's no casters
-  if found == False:
-    msg = "No caster today."
-
-  return msg
+    url = "http://smtgvs.cdn.weathernews.jp/a/solive_timetable/timetable.json"
+    response = requests.get(url)
+    data = response.json()
     
-# If statement for converting to kanji
-def kanji(caster):
+    return data
+
+# If statement for kanji caster name         
+def caster_kanji(caster):
   kanji_caster = ""
   if caster == "kobayashi":
     kanji_caster = "小林 李衣奈"
@@ -71,25 +26,103 @@ def kanji(caster):
     
   return kanji_caster
 
+# If statement for caster name alternative
+def caster_trans(caster):
+  alt_caster = caster
+  
+  if caster == "ailin":
+    alt_caster = "yamagishi"
+    
+  elif caster == "hiyama2018":
+    alt_caster = "hiyama"
+  
+  elif caster == "izumin":
+    alt_caster = "maie"
+  
+  elif caster == "komaki2018":
+    alt_caster = "komaki"
+  
+  elif caster == "matsu":
+    alt_caster = "matsuyuki"
+    
+  elif caster == "ohshima":
+    alt_caster = "oshima"
+
+  elif caster == "sayane":
+    alt_caster = "egawa"
+
+  elif caster == "yuki":
+    alt_caster = "uchida"
+          
+  return alt_caster
+
 # If statement for program title
-def program(title):
-  program_title = ""
+def title_trans(title):
+  alt_title = ""
+
   if title == "モーニング":
-    program_title = "morning"
+    alt_title = "morning"
 
   elif title == "サンシャイン":
-    program_title = "sunshine"
+    alt_title = "sunshine"
 
   elif title == "コーヒータイム":
-    program_title = "coffeetime"
+    alt_title = "coffeetime"
 
   elif title == "アフタヌーン":
-    program_title = "afternon"
+    alt_title = "afternoon"
 
   elif title == "イブニング":
-    program_title = "evening"
+    alt_title = "evening"
 
   elif title == "ムーン" or title == "ムーン ":
-    program_title = "moon"
+    alt_title = "moon"
 
-  return program_title
+  return alt_title
+
+# Function to print all available casters
+def data(casters):
+    caster = []
+    hour = []
+    title = []
+
+    for item in data_parse():
+        for key, value in item.items():
+            for name in casters:
+                if name in value:
+                    caster.append(item['caster'])
+                    hour.append(item['hour'])
+                    title.append(item['title'])
+    
+    return caster, hour, title
+
+# Function to print the message
+def message(casters):
+    caster, hour, title = data(casters)
+    
+    line = "今日も1日 Have a good day.\n\n"
+    
+    for idx in range(len(casters)):
+        program = title[idx].split("・")
+
+        # Timezone different
+        time = datetime.strptime(hour[idx], '%H:%M') - datetime.strptime("2:00", '%H:%M')
+        line = line + f"本日の{caster_kanji(caster_trans(caster[idx]))}の出演予定：{program[1]} {str(time)[:-3]}〜 (Indonesia time)\n\n"
+
+    return line
+
+def current():
+  first_data = data_parse()[0]
+
+  for key, value in first_data.items():
+    caster = caster_trans(first_data['caster'])
+    hour = first_data['hour']
+    
+    if "・" not in first_data['title']:
+        title = first_data['title']
+    else:
+        title = first_data['title'].split("・")[1]
+
+  img = f'https://smtgvs.cdn.weathernews.jp/wnl/img/caster/M1_{title_trans(title)}_{caster}.jpg'
+  
+  return caster, hour, title, img
