@@ -69,8 +69,8 @@ async def on_ready():
     await send_message()
 
   # Update time2
-  caster, hour, title = data(casters)
-  time2 = [time.fromisoformat(t) for t in hour]
+  msg, hour2 = message(casters)
+  time2 = [time.fromisoformat(t) for t in hour2]
 
   tasks = []
   for t in time2:

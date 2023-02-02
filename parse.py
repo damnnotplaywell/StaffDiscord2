@@ -103,13 +103,15 @@ def message(casters):
     line = "今日も1日 Have a good day.\n\n"
     
     for idx in range(len(casters)):
-        program = title[idx].split("・")
+      program = title[idx].split("・")
+      hour2 = []
 
-        # Timezone different
-        time = datetime.strptime(hour[idx], '%H:%M') - datetime.strptime("2:00", '%H:%M')
-        line = line + f"本日の{caster_kanji(caster_trans(caster[idx]))}の出演予定：{program[1]} {str(time)[:-3]}〜 (Indonesia time)\n\n"
+      # Timezone different
+      time = datetime.strptime(hour[idx], '%H:%M') - datetime.strptime("2:00", '%H:%M')
+      hour2.append((datetime.min + time).strftime("%H:%M"))
+      line = line + f"本日の{caster_kanji(caster_trans(caster[idx]))}の出演予定：{program[1]} {str(time)[:-3]}〜 (Indonesia time)\n\n"
 
-    return line
+    return line, hour2
 
 def current():
   first_data = data_parse()[0]
