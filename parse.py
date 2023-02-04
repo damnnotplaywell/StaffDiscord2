@@ -82,49 +82,31 @@ def title_trans(title):
 
 # Function to print all available casters
 def data(casters):
-    caster = []
-    hour = []
-    title = []
+  caster = []
+  hour = []
+  title = []
 
-    for item in data_parse():
-        for key, value in item.items():
-            for name in casters:
-                if name in value:
-                    caster.append(item['caster'])
-                    hour.append(item['hour'])
-                    title.append(item['title'])
-    
-    return caster, hour, title
+  for item in data_parse():
+    for key, value in item.items():
+      for name in casters:
+        if name in value:
+          caster.append(item['caster'])
+
+          program = item['title'].split("・")[1]
+          title.append(program)
+
+          time = datetime.strptime(item['hour'], '%H:%M') - datetime.strptime("2:00", '%H:%M')
+          hour.append((datetime.min + time).strftime("%H:%M"))
+
+  return caster, hour, title
 
 # Function to print the message
 def message(casters):
-    caster, hour, title = data(casters)
-    
-    line = "今日も1日 Have a good day.\n\n"
-    
-    for idx in range(len(casters)):
-      program = title[idx].split("・")
-      hour2 = []
-
-      # Timezone different
-      time = datetime.strptime(hour[idx], '%H:%M') - datetime.strptime("2:00", '%H:%M')
-      hour2.append((datetime.min + time).strftime("%H:%M"))
-      line = line + f"本日の{caster_kanji(caster_trans(caster[idx]))}の出演予定：{program[1]} {str(time)[:-3]}〜 (Indonesia time)\n\n"
-
-    return line, hour2
-
-def current():
-  first_data = data_parse()[0]
-
-  for key, value in first_data.items():
-    caster = caster_trans(first_data['caster'])
-    hour = first_data['hour']
-    
-    if "・" not in first_data['title']:
-        title = first_data['title']
-    else:
-        title = first_data['title'].split("・")[1]
-
-  img = f'https://smtgvs.cdn.weathernews.jp/wnl/img/caster/M1_{title_trans(title)}_{caster}.jpg'
+  caster, hour, title = data(casters)
   
-  return caster, hour, title, img
+  line = "今日も1日 Have a good day.\n\n"
+  
+  for idx in range(len(caster)):
+    line = line + f"本日の{caster_kanji(caster_trans(caster[idx]))}の出演予定：{title[idx]} {hour[idx]}〜 (Indonesia time)\n\n"
+
+  return line
