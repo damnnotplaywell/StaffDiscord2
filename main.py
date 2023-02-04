@@ -1,6 +1,6 @@
 import os
 import discord
-from datetime import time
+from datetime import time, timedelta
 from threading import Thread
 from discord import Client
 from discord.ext.tasks import loop
@@ -20,7 +20,9 @@ staff_channel_id = 1049414474274189333
 botdump_channel_id = 1040908494297120808
 
 # Set up time
-time1 = time(20, 0)
+offset = timedelta(hours=7)
+time1 = time(2, 0)
+time1 = (datetime.combine(datetime.today(), time1) - offset).time()
 
 # Casters
 casters = ["hiyama2018", "kobayashi", "komaki2018"]
@@ -47,15 +49,16 @@ async def send_message():
   channel = client.get_channel(staff_channel_id)
   await channel.send('@everyone\n' + msg)
 
-async def carousel_content():
+async def carousel_content(caster, hour, title):
   # Create the carousel message
-  cur_caster, cur_hour, cur_title, cur_img = current()
   
   embed = discord.Embed(title="ウェザーニュース L!VE", description="番組表（タイムテーブル）", url="https://www.youtube.com/watch?v=zAdWzjab1B8")
-  embed.set_thumbnail(url=cur_img)
-  embed.add_field(name="Caster", value=caster_kanji(caster_trans(cur_caster)))
-  embed.add_field(name="Time", value=cur_hour)
-  embed.add_field(name="Program", value=cur_title)
+  img = f'https://smtgvs.cdn.weathernews.jp/wnl/img/caster/M1_{title_trans(title[0])}_{caster_trans(caster[0])}.jpg'
+
+  embed.set_thumbnail(url=img)
+  embed.add_field(name="Caster", value=caster_kanji(caster_trans(caster[0])))
+  embed.add_field(name="Time", value=hour[0])
+  embed.add_field(name="Program", value=title[0])
 
   channel = client.get_channel(staff_channel_id)
   await channel.send(embed = embed)
@@ -68,21 +71,28 @@ async def on_ready():
   async def task_1():
     await send_message()
 
-  # Update time2
-  msg, hour2 = message(casters)
-  time2 = [time.fromisoformat(t) for t in hour2]
+    # Update time2
+    caster, hour, title = data(casters)
+    time2 = [time.fromisoformat(t) for t in hour]
 
-  tasks = []
-  for t in time2:
-    @loop(time=t)
-    async def task_2():
-      await carousel_content()
-    tasks.append(task_2)
-  
-  # Start the scheduled_task loop
+    tasks = []
+    for t in time2:
+      t = (datetime.combine(datetime.today(), t) - offset).time()
+      @loop(time=t)
+      async def task_2():
+        await carousel_content(caster, hour, title)
+      tasks.append(task_2)
+
+    for task in tasks:
+      task.start()
+      
   task_1.start()
-  for task in tasks:
-    task.start()
+    
+
+# @client.event
+# async def on_message(message):
+#   if message.content.startswith("!send"):
+#     await carousel_content()
 
 client_thread = Thread(target=run_client)
 client_thread.start()
