@@ -101,12 +101,15 @@ def data(casters):
   return caster, hour, title
 
 # Function to print the message
-def message(casters):
-  caster, hour, title = data(casters)
+def message(caster, hour, title):
   
   line = "今日も1日 Have a good day.\n\n"
-  
-  for idx in range(len(caster)):
-    line = line + f"本日の{caster_kanji(caster_trans(caster[idx]))}の出演予定：{title[idx]} {hour[idx]}〜 (Indonesia time)\n\n"
+
+  if len(caster) != 0:
+    for idx in range(len(caster)):
+      line = line + f"本日の{caster_kanji(caster_trans(caster[idx]))}の出演予定：{title[idx]} {hour[idx]}〜 (Indonesia time)\n\n"
+
+  else:
+    line = line + "No casters are available."
 
   return line
