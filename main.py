@@ -4,8 +4,8 @@ from datetime import time, timedelta
 from threading import Thread
 from discord import Client
 from discord.ext.tasks import loop
-from parse import *
 from flask import Flask
+from parse import *
 
 # Set up Flask app
 app = Flask(__name__)
@@ -19,13 +19,16 @@ client = Client(intents=intents)
 staff_channel_id = 1049414474274189333
 botdump_channel_id = 1040908494297120808
 
-# Set up time
+# Initialization
+casters = ["hiyama2018", "kobayashi", "komaki2018"]
+caster, hour, title = data(casters)
+
+# Set up time for send loop tasks
 offset = timedelta(hours=7)
 time1 = time(2, 0)
 time1 = (datetime.combine(datetime.today(), time1) - offset).time()
 
-# Casters
-casters = ["hiyama2018", "kobayashi", "komaki2018"]
+time2 = [time.fromisoformat(t) for t in hour] # Still +7 hours
 
 def run_client():
   try:
@@ -41,9 +44,9 @@ def index():
 
 ####################################################
 ################# MESSAGE CONTENT ##################
-async def send_message():
+async def send_message(caster, hour, title):
   # Parsing process
-  msg = message(casters)
+  msg = message(caster, hour, title)
   
   # # Send message to Discord
   channel = client.get_channel(staff_channel_id)
@@ -67,32 +70,34 @@ async def carousel_content(caster, hour, title):
 ##################### TASKS ########################
 @client.event
 async def on_ready():
+  tasks = []
+  
   @loop(time=time1)
   async def task_1():
-    await send_message()
+    await send_message(casters, hour, title)
 
-    # Update time2
-    caster, hour, title = data(casters)
-    time2 = [time.fromisoformat(t) for t in hour]
+    if len(casters)!= 0:
+      for t in time2:
+        t = (datetime.combine(datetime.today(), t) - offset).time()
+        @loop(time=t)
+        async def task_2():
+          await carousel_content(casters, hour, title)
+        tasks.append(task_2)
 
-    tasks = []
-    for t in time2:
-      t = (datetime.combine(datetime.today(), t) - offset).time()
-      @loop(time=t)
-      async def task_2():
-        await carousel_content(caster, hour, title)
-      tasks.append(task_2)
+    else:
+      pass
 
-    for task in tasks:
-      task.start()
-      
+  # Start task_1 and task_2
   task_1.start()
-    
+  for task in tasks:
+    task.start()
 
-# @client.event
-# async def on_message(message):
-#   if message.content.startswith("!send"):
-#     await carousel_content()
+#####################################################
+################### TESTS ###########################
+@client.event
+async def on_message(message):
+  if message.content.startswith("!send"):
+    await send_message(caster, hour, title)
 
 client_thread = Thread(target=run_client)
 client_thread.start()
