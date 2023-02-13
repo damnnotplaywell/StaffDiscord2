@@ -1,5 +1,6 @@
 import os
 import discord
+import pickle
 from datetime import time, timedelta
 from threading import Thread
 from discord import Client
@@ -21,14 +22,11 @@ botdump_channel_id = 1040908494297120808
 
 # Initialization
 casters = ["hiyama2018", "kobayashi", "komaki2018"]
-caster, hour, title = data(casters)
 
 # Set up time for send loop tasks
 offset = timedelta(hours=7)
-time1 = time(2, 0)
+time1 = time(2,0)
 time1 = (datetime.combine(datetime.today(), time1) - offset).time()
-
-time2 = [time.fromisoformat(t) for t in hour] # Still +7 hours
 
 def run_client():
   try:
@@ -71,23 +69,25 @@ async def carousel_content(caster, hour, title):
 @client.event
 async def on_ready():
   tasks = []
-  
+
   @loop(time=time1)
   async def task_1():
-    await send_message(casters, hour, title)
+    caster, hour, title = data(casters)
+    with open("data.pickle", "wb") as f:
+        pickle.dump((caster, hour, title), f)
+    await send_message(caster, hour, title)
 
-    if len(casters)!= 0:
-      for t in time2:
-        t = (datetime.combine(datetime.today(), t) - offset).time()
-        @loop(time=t)
-        async def task_2():
-          await carousel_content(casters, hour, title)
-        tasks.append(task_2)
+  with open("data.pickle", "rb") as f:
+    caster, hour, title = pickle.load(f)
+    
+    time2 = [time.fromisoformat(t) for t in hour]
+    for t in time2:
+      t = (datetime.combine(datetime.today(), t) - offset).time()
+      @loop(time=t)
+      async def task_2():
+        await carousel_content(caster, hour, title)
+      tasks.append(task_2)
 
-    else:
-      pass
-
-  # Start task_1 and task_2
   task_1.start()
   for task in tasks:
     task.start()
