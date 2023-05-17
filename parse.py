@@ -1,16 +1,22 @@
 import requests
 from datetime import datetime
 
-# Function to parse the json data from URL
 def data_parse():
+    """
+    Get data from the API
+    """
     url = "http://smtgvs.cdn.weathernews.jp/a/solive_timetable/timetable.json"
     response = requests.get(url)
     data = response.json()
     
     return data
 
-# If statement for kanji caster name         
+  
 def caster_kanji(caster):
+  """
+  Caster name in kanji
+  """
+  
   kanji_caster = ""
   if caster == "kobayashi":
     kanji_caster = "小林 李衣奈"
@@ -26,8 +32,11 @@ def caster_kanji(caster):
     
   return kanji_caster
 
-# If statement for caster name alternative
 def caster_trans(caster):
+  """
+  Caster name alternative
+  """
+
   alt_caster = caster
   
   if caster == "ailin":
@@ -56,8 +65,12 @@ def caster_trans(caster):
           
   return alt_caster
 
-# If statement for program title
+
 def title_trans(title):
+  """
+  Program title alternative
+  """
+  
   alt_title = ""
 
   if title == "モーニング":
@@ -80,8 +93,11 @@ def title_trans(title):
 
   return alt_title
 
-# Function to print all available casters
 def data(casters):
+  """
+  Function to print all available casters
+  """
+  
   caster = []
   hour = []
   title = []
@@ -102,6 +118,9 @@ def data(casters):
 
 # Function to print the message
 def message(caster, hour, title):
+  """
+  Function to print the message
+  """
   
   line = "今日も1日 Have a good day.\n\n"
 
